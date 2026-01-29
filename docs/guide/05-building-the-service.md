@@ -2,6 +2,8 @@
 
 The service layer contains your business logic. It takes raw data from repositories and transforms it into exactly what your application needs.
 
+---
+
 ## What is a Service?
 
 Think of a service as a chef:
@@ -9,7 +11,9 @@ Think of a service as a chef:
 - The chef processes them (formatting, combining, calculating)
 - A finished dish comes out (clean, usable data)
 
-## Why We Need Services
+---
+
+## Step 1: Understand the Data Transformation
 
 The PokeAPI returns data like this:
 
@@ -36,16 +40,28 @@ But we want data like this:
 }
 ```
 
-The service layer handles this transformation.
+---
 
-## Creating the Service
+## Step 2: Create the Service File
 
-Create `src/services/pokemonService.js`:
+1. Create a new file `src/services/pokemonService.js`
+
+2. Add the imports at the top:
 
 ```javascript
 import * as pokemonRepository from '../repositories/pokemonRepository.js';
 import { config } from '../config/index.js';
+```
 
+3. Save the file
+
+---
+
+## Step 3: Add Helper Functions
+
+1. Add these helper functions for formatting:
+
+```javascript
 /**
  * Format Pokemon name for display
  * "mr-mime" → "Mr Mime"
@@ -71,7 +87,17 @@ const formatStatName = (name) => {
   };
   return statNames[name] || formatName(name);
 };
+```
 
+2. Save the file
+
+---
+
+## Step 4: Add formatPokemonData Function
+
+1. Add this function to transform raw data:
+
+```javascript
 /**
  * Transform raw Pokemon data into display-ready format
  */
@@ -83,8 +109,7 @@ const formatPokemonData = (pokemon, species = null) => {
       ?.flavor_text?.replace(/\f/g, ' ') || 'No description available.';
 
   // Get English genus (e.g., "Mouse Pokémon")
-  const genus = species?.genera
-    ?.find((g) => g.language.name === 'en')?.genus || 'Unknown';
+  const genus = species?.genera?.find((g) => g.language.name === 'en')?.genus || 'Unknown';
 
   return {
     id: pokemon.id,
@@ -92,16 +117,15 @@ const formatPokemonData = (pokemon, species = null) => {
     displayName: formatName(pokemon.name),
 
     // Get best available image
-    image: pokemon.sprites.other['official-artwork'].front_default
-      || pokemon.sprites.front_default,
+    image: pokemon.sprites.other['official-artwork'].front_default || pokemon.sprites.front_default,
     sprite: pokemon.sprites.front_default,
 
     // Simplify types array
     types: pokemon.types.map((t) => t.type.name),
 
     // Convert units
-    height: pokemon.height / 10,  // decimeters → meters
-    weight: pokemon.weight / 10,  // hectograms → kilograms
+    height: pokemon.height / 10, // decimeters → meters
+    weight: pokemon.weight / 10, // hectograms → kilograms
 
     // Format abilities
     abilities: pokemon.abilities.map((a) => ({
@@ -125,48 +149,13 @@ const formatPokemonData = (pokemon, species = null) => {
 };
 ```
 
-## Understanding Helper Functions
+2. Save the file
 
-### formatName Function
+---
 
-```javascript
-const formatName = (name) => {
-  return name
-    .split('-')              // "mr-mime" → ["mr", "mime"]
-    .map((word) =>           // For each word:
-      word.charAt(0).toUpperCase() + word.slice(1)
-    )                        // ["mr", "mime"] → ["Mr", "Mime"]
-    .join(' ');              // ["Mr", "Mime"] → "Mr Mime"
-};
-```
+## Step 5: Add getPokemonDetails Function
 
-Examples:
-- `"pikachu"` → `"Pikachu"`
-- `"mr-mime"` → `"Mr Mime"`
-- `"tapu-koko"` → `"Tapu Koko"`
-
-### formatStatName Function
-
-```javascript
-const formatStatName = (name) => {
-  const statNames = {
-    hp: 'HP',
-    attack: 'Attack',
-    // ...
-  };
-  return statNames[name] || formatName(name);
-};
-```
-
-This maps API stat names to display-friendly versions:
-- `"hp"` → `"HP"`
-- `"special-attack"` → `"Sp. Atk"`
-
-## Main Service Functions
-
-Add these exported functions to your service:
-
-### getPokemonDetails
+1. Add this exported function:
 
 ```javascript
 export const getPokemonDetails = async (nameOrId) => {
@@ -174,7 +163,7 @@ export const getPokemonDetails = async (nameOrId) => {
   const pokemon = await pokemonRepository.getPokemonByNameOrId(nameOrId);
 
   if (!pokemon) {
-    return null;  // Not found
+    return null; // Not found
   }
 
   // Try to get species data (for descriptions)
@@ -190,12 +179,13 @@ export const getPokemonDetails = async (nameOrId) => {
 };
 ```
 
-Key points:
-- Fetches from TWO endpoints (pokemon + species)
-- Species data is optional (wrapped in try/catch)
-- Returns `null` if Pokemon not found
+2. Save the file
 
-### getAllPokemon (with pagination)
+---
+
+## Step 6: Add getAllPokemon Function
+
+1. Add this function with pagination:
 
 ```javascript
 export const getAllPokemon = async (page = 1, limit = config.pagination.defaultLimit) => {
@@ -225,31 +215,13 @@ export const getAllPokemon = async (page = 1, limit = config.pagination.defaultL
 };
 ```
 
-#### Understanding Pagination
+2. Save the file
 
-```
-Page 1: Items 1-20   (offset: 0)
-Page 2: Items 21-40  (offset: 20)
-Page 3: Items 41-60  (offset: 40)
+---
 
-Formula: offset = (page - 1) * limit
-```
+## Step 7: Add searchPokemon Function
 
-#### Understanding Promise.all
-
-```javascript
-const pokemonWithDetails = await Promise.all(
-  data.results.map(async (pokemon) => {
-    return getPokemonDetails(pokemon.name);
-  })
-);
-```
-
-`Promise.all()` runs multiple async operations in parallel:
-- Without it: Fetch Pokemon 1, wait, fetch Pokemon 2, wait... (slow)
-- With it: Fetch all 20 Pokemon at once, wait for all (fast)
-
-### searchPokemon
+1. Add this search function:
 
 ```javascript
 export const searchPokemon = async (query) => {
@@ -285,12 +257,13 @@ export const searchPokemon = async (query) => {
 };
 ```
 
-The search strategy:
-1. First, try exact match (e.g., "pikachu" finds Pikachu directly)
-2. If no exact match, do partial search (e.g., "char" finds Charmander, Charmeleon, Charizard)
-3. Limit results to 20 for performance
+2. Save the file
 
-### getPokemonTypes
+---
+
+## Step 8: Add Type Functions
+
+1. Add these functions for working with types:
 
 ```javascript
 export const getPokemonTypes = async () => {
@@ -305,11 +278,7 @@ export const getPokemonTypes = async () => {
       displayName: formatName(t.name)
     }));
 };
-```
 
-### getPokemonByType
-
-```javascript
 export const getPokemonByType = async (
   typeName,
   page = 1,
@@ -318,7 +287,7 @@ export const getPokemonByType = async (
   const pokemonList = await pokemonRepository.getPokemonByType(typeName);
 
   if (!pokemonList) {
-    return null;  // Type not found
+    return null; // Type not found
   }
 
   // Manual pagination (API returns all at once)
@@ -344,23 +313,41 @@ export const getPokemonByType = async (
 };
 ```
 
-## Data Flow Visualization
+2. Save the file
+
+---
+
+## Step 9: Verify Your Complete File
+
+Your `src/services/pokemonService.js` should now have all these functions. Verify it matches the structure shown in the repository.
+
+---
+
+## Understanding Key Concepts
+
+### Promise.all for Parallel Requests
+
+```javascript
+const pokemonWithDetails = await Promise.all(
+  data.results.map(async (pokemon) => {
+    return getPokemonDetails(pokemon.name);
+  })
+);
+```
+
+`Promise.all()` runs multiple async operations in parallel - much faster than sequential!
+
+### Pagination Formula
 
 ```
-Repository returns:                Service outputs:
-─────────────────                  ────────────────
+Page 1: Items 1-20   (offset: 0)
+Page 2: Items 21-40  (offset: 20)
+Page 3: Items 41-60  (offset: 40)
 
-{                                  {
-  name: "pikachu"           →        displayName: "Pikachu"
-  height: 4                 →        height: 0.4  (meters)
-  weight: 60                →        weight: 6.0  (kg)
-  types: [                  →        types: ["electric"]
-    {type: {name: "..."}}
-  ]
-  sprites: {...}            →        image: "url..."
-  stats: [{...}]            →        stats: [{name: "HP", value: 35}]
-}                                  }
+Formula: offset = (page - 1) * limit
 ```
+
+---
 
 ## Summary
 
@@ -372,19 +359,28 @@ Repository returns:                Service outputs:
 | `getPokemonTypes()` | List all types | Array of types |
 | `getPokemonByType(type, page)` | Pokemon by type | `{ pokemon, pagination... }` |
 
-## Commit Your Progress
+---
 
-Commit your service layer:
+## Step 10: Commit Your Progress
+
+1. Stage your changes:
 
 ```bash
 git add .
+```
+
+2. Commit with the conventional format:
+
+```bash
 git commit -m "feat: add pokemon service for business logic
 
 Full Name: Juan Dela Cruz
 Umindanao: juan.delacruz@email.com"
 ```
 
-> **Remember:** Replace the name and email with your own information.
+3. Replace the name and email with your own information
+
+---
 
 ## What's Next?
 

@@ -2,12 +2,16 @@
 
 Controllers handle HTTP requests and responses. They're the bridge between your routes (URLs) and your services (business logic).
 
+---
+
 ## What is a Controller?
 
 Think of controllers as customer service representatives:
 - They receive requests from customers (HTTP requests)
 - They get the information needed (call services)
 - They respond in the right format (HTML or JSON)
+
+---
 
 ## Two Types of Controllers
 
@@ -18,49 +22,27 @@ Our app has two types of controllers:
 | **View Controllers** | HTML pages (via EJS) | Web browsers |
 | **API Controllers** | JSON data | Mobile apps, other services |
 
-## Understanding Request and Response
+---
 
-Every Express controller receives two objects:
+## Step 1: Create the Controller File
 
-```javascript
-function controller(req, res) {
-  // req = incoming request information
-  // res = methods to send responses
-}
-```
+1. Create a new file `src/controllers/pokemonController.js`
 
-### The Request Object (req)
-
-```javascript
-// URL: /pokemon/pikachu?format=detailed
-
-req.params    // { nameOrId: "pikachu" }  - URL parameters
-req.query     // { format: "detailed" }    - Query string
-req.body      // { ... }                   - POST body data
-req.method    // "GET"                     - HTTP method
-```
-
-### The Response Object (res)
-
-```javascript
-// For HTML responses
-res.render('template', { data });  // Render EJS template
-
-// For JSON responses
-res.json({ success: true, data }); // Send JSON
-
-// Set status code
-res.status(404).render('error');   // Set status + render
-res.status(500).json({ error });   // Set status + send JSON
-```
-
-## Creating the Controller
-
-Create `src/controllers/pokemonController.js`:
+2. Add the import at the top:
 
 ```javascript
 import * as pokemonService from '../services/pokemonService.js';
+```
 
+3. Save the file
+
+---
+
+## Step 2: Add getHomePage Controller
+
+1. Add this controller for the home page:
+
+```javascript
 // ============================================
 // VIEW CONTROLLERS (Return HTML via EJS)
 // ============================================
@@ -80,32 +62,37 @@ export const getHomePage = async (req, res) => {
 
     // Render the index template
     res.render('index', {
-      ...data,          // Spread pokemon data
-      types,            // Add types for filter dropdown
-      searchQuery: '',  // Empty search box
-      selectedType: ''  // No type selected
+      ...data,
+      types,
+      searchQuery: '',
+      selectedType: ''
     });
   } catch (error) {
-    // Render error page on failure
     res.status(500).render('error', {
       message: 'Failed to load Pokemon',
       error: error.message
     });
   }
 };
+```
 
+2. Save the file
+
+---
+
+## Step 3: Add getPokemonDetails Controller
+
+1. Add this controller for the detail page:
+
+```javascript
 /**
  * Pokemon detail page
  */
 export const getPokemonDetails = async (req, res) => {
   try {
-    // Get Pokemon name/id from URL parameter
     const { nameOrId } = req.params;
-
-    // Fetch Pokemon details
     const pokemon = await pokemonService.getPokemonDetails(nameOrId);
 
-    // Handle not found
     if (!pokemon) {
       return res.status(404).render('error', {
         message: 'Pokemon not found',
@@ -113,7 +100,6 @@ export const getPokemonDetails = async (req, res) => {
       });
     }
 
-    // Render detail page
     res.render('pokemon', { pokemon });
   } catch (error) {
     res.status(500).render('error', {
@@ -122,20 +108,26 @@ export const getPokemonDetails = async (req, res) => {
     });
   }
 };
+```
 
+2. Save the file
+
+---
+
+## Step 4: Add searchPokemon Controller
+
+1. Add this controller for search results:
+
+```javascript
 /**
  * Search results page
  */
 export const searchPokemon = async (req, res) => {
   try {
-    // Get search query from URL (?q=pikachu)
     const { q } = req.query;
-
-    // Fetch types (for filter dropdown) and search results
     const types = await pokemonService.getPokemonTypes();
     const data = await pokemonService.searchPokemon(q);
 
-    // Render using same index template
     res.render('index', {
       ...data,
       types,
@@ -143,7 +135,7 @@ export const searchPokemon = async (req, res) => {
       totalPages: 1,
       hasNextPage: false,
       hasPrevPage: false,
-      searchQuery: q || '',  // Show search term in box
+      searchQuery: q || '',
       selectedType: ''
     });
   } catch (error) {
@@ -153,7 +145,17 @@ export const searchPokemon = async (req, res) => {
     });
   }
 };
+```
 
+2. Save the file
+
+---
+
+## Step 5: Add getPokemonByType Controller
+
+1. Add this controller for type filtering:
+
+```javascript
 /**
  * Filter by type page
  */
@@ -161,11 +163,9 @@ export const getPokemonByType = async (req, res) => {
   try {
     const { type } = req.params;
     const page = parseInt(req.query.page) || 1;
-
     const types = await pokemonService.getPokemonTypes();
     const data = await pokemonService.getPokemonByType(type, page);
 
-    // Handle invalid type
     if (!data) {
       return res.status(404).render('error', {
         message: 'Type not found',
@@ -177,7 +177,7 @@ export const getPokemonByType = async (req, res) => {
       ...data,
       types,
       searchQuery: '',
-      selectedType: type  // Highlight selected type
+      selectedType: type
     });
   } catch (error) {
     res.status(500).render('error', {
@@ -188,9 +188,13 @@ export const getPokemonByType = async (req, res) => {
 };
 ```
 
-## API Controllers
+2. Save the file
 
-Add these for JSON responses:
+---
+
+## Step 6: Add API Controllers
+
+1. Add these controllers for JSON responses:
 
 ```javascript
 // ============================================
@@ -205,7 +209,6 @@ export const apiGetAllPokemon = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
     const data = await pokemonService.getAllPokemon(page, limit);
-
     res.json({ success: true, data });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
@@ -281,132 +284,90 @@ export const apiGetPokemonByType = async (req, res) => {
 };
 ```
 
+2. Save the file
+
+---
+
+## Step 7: Verify Your Complete File
+
+Your controller file should have all these exported functions:
+- `getHomePage`
+- `getPokemonDetails`
+- `searchPokemon`
+- `getPokemonByType`
+- `apiGetAllPokemon`
+- `apiGetPokemonDetails`
+- `apiSearchPokemon`
+- `apiGetTypes`
+- `apiGetPokemonByType`
+
+---
+
 ## Understanding Key Patterns
 
-### Pattern 1: Parsing Query Parameters
+### Request Object (req)
 
 ```javascript
-const page = parseInt(req.query.page) || 1;
+req.params    // URL parameters: /pokemon/:nameOrId → { nameOrId: "pikachu" }
+req.query     // Query string: ?page=2 → { page: "2" }
 ```
 
-- `req.query.page` is a string (e.g., `"2"`)
-- `parseInt()` converts to number
-- `|| 1` provides default if parsing fails or undefined
+### Response Object (res)
 
-### Pattern 2: Early Return for Errors
+```javascript
+res.render('template', { data });  // Render HTML
+res.json({ data });                // Send JSON
+res.status(404).render('error');   // Set status + render
+```
+
+### Early Return Pattern
 
 ```javascript
 if (!pokemon) {
   return res.status(404).render('error', { ... });
 }
-// Continue with normal flow
+// Normal flow continues
 res.render('pokemon', { pokemon });
 ```
 
-Using `return` prevents executing the rest of the function.
-
-### Pattern 3: Spread Operator with Data
-
-```javascript
-res.render('index', {
-  ...data,          // Spreads: { pokemon, currentPage, totalPages, ... }
-  types,            // Adds: types
-  searchQuery: ''   // Adds: searchQuery
-});
-```
-
-The spread operator (`...`) unpacks an object's properties.
-
-### Pattern 4: Consistent API Response Format
-
-```javascript
-// Success response
-res.json({ success: true, data: pokemon });
-
-// Error response
-res.status(500).json({ success: false, error: error.message });
-```
-
-Always include a `success` field for easy client-side handling.
-
-## HTTP Status Codes
-
-| Code | Meaning | When to Use |
-|------|---------|-------------|
-| 200 | OK | Successful request (default) |
-| 404 | Not Found | Resource doesn't exist |
-| 500 | Server Error | Something went wrong |
-
-## Error Handling
-
-Every controller should have error handling:
-
-```javascript
-export const controller = async (req, res) => {
-  try {
-    // Your logic here
-  } catch (error) {
-    // Always handle errors!
-    res.status(500).render('error', {
-      message: 'Something went wrong',
-      error: error.message
-    });
-  }
-};
-```
-
-## Controller vs Service: What Goes Where?
-
-| Task | Layer | Example |
-|------|-------|---------|
-| Parse request data | Controller | `parseInt(req.query.page)` |
-| Validate input | Controller | `if (!q) return error` |
-| Business logic | Service | `formatPokemonData()` |
-| Data fetching | Repository | `axios.get()` |
-| Send response | Controller | `res.render()` / `res.json()` |
-
-## Testing Controllers
-
-Controllers can be tested using HTTP requests:
-
-```bash
-# Test home page
-curl http://localhost:3000/
-
-# Test API endpoint
-curl http://localhost:3000/api/pokemon/pikachu
-
-# Test search
-curl "http://localhost:3000/api/pokemon/search?q=char"
-```
+---
 
 ## Summary
 
 | Controller | Route | Returns |
 |------------|-------|---------|
-| `getHomePage` | GET / | HTML (index.ejs) |
-| `getPokemonDetails` | GET /pokemon/:nameOrId | HTML (pokemon.ejs) |
-| `searchPokemon` | GET /search | HTML (index.ejs) |
-| `getPokemonByType` | GET /type/:type | HTML (index.ejs) |
+| `getHomePage` | GET / | HTML |
+| `getPokemonDetails` | GET /pokemon/:nameOrId | HTML |
+| `searchPokemon` | GET /search | HTML |
+| `getPokemonByType` | GET /type/:type | HTML |
 | `apiGetAllPokemon` | GET /api/pokemon | JSON |
 | `apiGetPokemonDetails` | GET /api/pokemon/:nameOrId | JSON |
 | `apiSearchPokemon` | GET /api/pokemon/search | JSON |
 | `apiGetTypes` | GET /api/types | JSON |
 | `apiGetPokemonByType` | GET /api/types/:type | JSON |
 
-## Commit Your Progress
+---
 
-Commit your controller layer:
+## Step 8: Commit Your Progress
+
+1. Stage your changes:
 
 ```bash
 git add .
+```
+
+2. Commit with the conventional format:
+
+```bash
 git commit -m "feat: add pokemon controllers for request handling
 
 Full Name: Juan Dela Cruz
 Umindanao: juan.delacruz@email.com"
 ```
 
-> **Remember:** Replace the name and email with your own information.
+3. Replace the name and email with your own information
+
+---
 
 ## What's Next?
 

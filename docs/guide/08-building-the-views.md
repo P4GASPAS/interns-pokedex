@@ -2,9 +2,11 @@
 
 Views are the HTML templates that display data to users. We use EJS (Embedded JavaScript) as our template engine.
 
+---
+
 ## What is EJS?
 
-EJS lets you embed JavaScript in HTML. It's like HTML with superpowers:
+EJS lets you embed JavaScript in HTML:
 
 ```html
 <!-- Regular HTML -->
@@ -14,6 +16,8 @@ EJS lets you embed JavaScript in HTML. It's like HTML with superpowers:
 <h1>Hello <%= userName %></h1>
 ```
 
+---
+
 ## EJS Syntax
 
 | Syntax | Purpose | Example |
@@ -22,35 +26,13 @@ EJS lets you embed JavaScript in HTML. It's like HTML with superpowers:
 | `<%- %>` | Output (unescaped) | `<%- include('header') %>` |
 | `<% %>` | JavaScript logic | `<% if (condition) { %>` |
 
-### Important: Escaped vs Unescaped
+---
 
-```html
-<!-- ESCAPED: Converts < > & to safe characters -->
-<%= userInput %>  <!-- <script> becomes &lt;script&gt; -->
+## Step 1: Create the Header Partial
 
-<!-- UNESCAPED: Outputs raw HTML -->
-<%- htmlContent %>  <!-- Use only for trusted content! -->
-```
+1. Create a new file `src/views/partials/header.ejs`
 
-## Project View Structure
-
-```
-src/views/
-├── index.ejs        # Home page (Pokemon list)
-├── pokemon.ejs      # Pokemon detail page
-├── error.ejs        # Error page
-└── partials/
-    ├── header.ejs   # Page header (reused)
-    └── footer.ejs   # Page footer (reused)
-```
-
-## Creating the Partials
-
-Partials are reusable template pieces.
-
-### Header Partial
-
-Create `src/views/partials/header.ejs`:
+2. Add this code:
 
 ```html
 <!DOCTYPE html>
@@ -79,9 +61,15 @@ Create `src/views/partials/header.ejs`:
     </header>
 ```
 
-### Footer Partial
+3. Save the file
 
-Create `src/views/partials/footer.ejs`:
+---
+
+## Step 2: Create the Footer Partial
+
+1. Create a new file `src/views/partials/footer.ejs`
+
+2. Add this code:
 
 ```html
     <footer class="pokedex-footer">
@@ -92,17 +80,20 @@ Create `src/views/partials/footer.ejs`:
 </html>
 ```
 
-## Creating the Main Views
+3. Save the file
 
-### Index Page (Pokemon List)
+---
 
-Create `src/views/index.ejs`:
+## Step 3: Create the Index Page
+
+1. Create a new file `src/views/index.ejs`
+
+2. Add this code:
 
 ```html
 <%- include('partials/header') %>
 
 <main class="main-content">
-  <!-- Search Section -->
   <div class="search-section">
     <form action="/search" method="GET" class="search-form">
       <div class="search-input-wrapper">
@@ -122,14 +113,12 @@ Create `src/views/index.ejs`:
       </div>
     </form>
 
-    <!-- Type Filter -->
     <div class="type-filter">
       <label>Filter by Type:</label>
       <div class="type-buttons">
         <a href="/" class="type-btn <%= selectedType === '' ? 'active' : '' %>">All</a>
         <% types.forEach(type => { %>
-          <a href="/type/<%= type.name %>"
-             class="type-btn type-<%= type.name %> <%= selectedType === type.name ? 'active' : '' %>">
+          <a href="/type/<%= type.name %>" class="type-btn type-<%= type.name %> <%= selectedType === type.name ? 'active' : '' %>">
             <%= type.displayName %>
           </a>
         <% }); %>
@@ -137,7 +126,6 @@ Create `src/views/index.ejs`:
     </div>
   </div>
 
-  <!-- Search Results Info -->
   <% if (searchQuery) { %>
     <div class="search-results-info">
       <p>Found <%= totalCount %> result(s) for "<%= searchQuery %>"</p>
@@ -152,16 +140,13 @@ Create `src/views/index.ejs`:
     </div>
   <% } %>
 
-  <!-- Pokemon Grid -->
   <div class="pokemon-grid">
     <% if (pokemon && pokemon.length > 0) { %>
       <% pokemon.forEach(poke => { %>
         <a href="/pokemon/<%= poke.name %>" class="pokemon-card type-bg-<%= poke.types[0] %>">
           <div class="pokemon-id">#<%= String(poke.id).padStart(3, '0') %></div>
           <div class="pokemon-image">
-            <img src="<%= poke.image || poke.sprite %>"
-                 alt="<%= poke.displayName %>"
-                 loading="lazy">
+            <img src="<%= poke.image || poke.sprite %>" alt="<%= poke.displayName %>" loading="lazy">
           </div>
           <h3 class="pokemon-name"><%= poke.displayName %></h3>
           <div class="pokemon-types">
@@ -178,7 +163,6 @@ Create `src/views/index.ejs`:
     <% } %>
   </div>
 
-  <!-- Pagination -->
   <% if (!searchQuery && totalPages > 1) { %>
     <div class="pagination">
       <% if (hasPrevPage) { %>
@@ -201,73 +185,15 @@ Create `src/views/index.ejs`:
 <%- include('partials/footer') %>
 ```
 
-## Understanding EJS Patterns
+3. Save the file
 
-### 1. Including Partials
+---
 
-```html
-<%- include('partials/header') %>
-```
+## Step 4: Create the Pokemon Detail Page
 
-The `-` (dash) means unescaped output - required for including HTML.
+1. Create a new file `src/views/pokemon.ejs`
 
-### 2. Outputting Variables
-
-```html
-<h1><%= pokemon.displayName %></h1>
-<p>#<%= String(pokemon.id).padStart(3, '0') %></p>
-```
-
-Use `<%= %>` for safe output. Variables come from `res.render()`.
-
-### 3. Loops with forEach
-
-```html
-<% pokemon.forEach(poke => { %>
-  <div class="card">
-    <h3><%= poke.name %></h3>
-  </div>
-<% }); %>
-```
-
-Notice:
-- Opening `<% %>` contains the loop start
-- Content inside the loop uses `<%= %>` for output
-- Closing `<% }); %>` ends the loop
-
-### 4. Conditional Rendering
-
-```html
-<% if (searchQuery) { %>
-  <p>Searching for: <%= searchQuery %></p>
-<% } %>
-
-<% if (pokemon.length > 0) { %>
-  <!-- Show Pokemon -->
-<% } else { %>
-  <p>No Pokemon found</p>
-<% } %>
-```
-
-### 5. Dynamic CSS Classes
-
-```html
-<a class="type-btn <%= selectedType === type.name ? 'active' : '' %>">
-```
-
-This adds the `active` class only when the condition is true.
-
-### 6. Ternary for Fallbacks
-
-```html
-<img src="<%= poke.image || poke.sprite %>">
-```
-
-Use `||` for fallback values when a property might be null.
-
-## Pokemon Detail Page
-
-Create `src/views/pokemon.ejs`:
+2. Add this code:
 
 ```html
 <%- include('partials/header') %>
@@ -349,7 +275,6 @@ Create `src/views/pokemon.ejs`:
 </main>
 
 <script>
-  // Animate stat bars on load
   document.querySelectorAll('.stat-bar').forEach(bar => {
     bar.style.width = bar.dataset.width + '%';
   });
@@ -358,9 +283,15 @@ Create `src/views/pokemon.ejs`:
 <%- include('partials/footer') %>
 ```
 
-## Error Page
+3. Save the file
 
-Create `src/views/error.ejs`:
+---
+
+## Step 5: Create the Error Page
+
+1. Create a new file `src/views/error.ejs`
+
+2. Add this code:
 
 ```html
 <%- include('partials/header') %>
@@ -381,46 +312,78 @@ Create `src/views/error.ejs`:
 <%- include('partials/footer') %>
 ```
 
-## How Data Gets to Views
+3. Save the file
 
-In controllers, we use `res.render()`:
+---
 
-```javascript
-res.render('index', {
-  pokemon: pokemonList,
-  currentPage: 1,
-  totalPages: 10,
-  searchQuery: ''
-});
+## Step 6: Verify Your Views
+
+You should now have these files:
+
+```
+src/views/
+├── index.ejs           # Home page
+├── pokemon.ejs         # Detail page
+├── error.ejs           # Error page
+└── partials/
+    ├── header.ejs      # Page header
+    └── footer.ejs      # Page footer
 ```
 
-Each property becomes available in the template:
-- `pokemon` → `<%= pokemon %>`
-- `currentPage` → `<%= currentPage %>`
+---
 
-## Summary
+## Understanding EJS Patterns
 
-| File | Purpose |
-|------|---------|
-| `partials/header.ejs` | HTML head, header, opened body |
-| `partials/footer.ejs` | Footer, close body/html |
-| `index.ejs` | Home page with grid, search, pagination |
-| `pokemon.ejs` | Detail page with stats |
-| `error.ejs` | Error display |
+### Including Partials
 
-## Commit Your Progress
+```html
+<%- include('partials/header') %>
+```
 
-Commit your EJS templates:
+### Outputting Variables
+
+```html
+<h1><%= pokemon.displayName %></h1>
+```
+
+### Loops
+
+```html
+<% pokemon.forEach(poke => { %>
+  <div><%= poke.name %></div>
+<% }); %>
+```
+
+### Conditionals
+
+```html
+<% if (searchQuery) { %>
+  <p>Searching for: <%= searchQuery %></p>
+<% } %>
+```
+
+---
+
+## Step 7: Commit Your Progress
+
+1. Stage your changes:
 
 ```bash
 git add .
+```
+
+2. Commit with the conventional format:
+
+```bash
 git commit -m "feat: add EJS view templates
 
 Full Name: Juan Dela Cruz
 Umindanao: juan.delacruz@email.com"
 ```
 
-> **Remember:** Replace the name and email with your own information.
+3. Replace the name and email with your own information
+
+---
 
 ## What's Next?
 

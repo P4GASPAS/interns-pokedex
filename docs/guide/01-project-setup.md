@@ -2,6 +2,8 @@
 
 In this section, you'll fork the repository, clone it to your machine, and set up your development environment.
 
+---
+
 ## Step 1: Fork the Repository
 
 1. Go to the repository on GitHub
@@ -11,26 +13,34 @@ In this section, you'll fork the repository, clone it to your machine, and set u
 
 You now have your own copy of the repository under your GitHub account.
 
+---
+
 ## Step 2: Clone Your Fork
 
-Open your terminal and clone your forked repository:
+1. Open your terminal
+2. Run the following command (replace `YOUR-USERNAME` with your GitHub username):
 
 ```bash
 git clone https://github.com/YOUR-USERNAME/inter-workshop.git
+```
+
+3. Navigate into the project folder:
+
+```bash
 cd inter-workshop
 ```
 
-Replace `YOUR-USERNAME` with your actual GitHub username.
+---
 
 ## Step 3: Create Your Branch
 
-Create a new branch for your work. Use the format `lastname/pokedex-pull-request`:
+1. Create a new branch using the format `lastname/pokedex-pull-request`:
 
 ```bash
 git checkout -b dela-cruz/pokedex-pull-request
 ```
 
-> **Note:** Replace `dela-cruz` with your actual last name (use lowercase and hyphens for spaces).
+2. Replace `dela-cruz` with your actual last name (use lowercase and hyphens for spaces)
 
 ### Branch Naming Examples
 
@@ -40,58 +50,63 @@ git checkout -b dela-cruz/pokedex-pull-request
 | Maria Santos | `santos/pokedex-pull-request` |
 | John Smith | `smith/pokedex-pull-request` |
 
+---
+
 ## Step 4: Install Dependencies
 
-Install all the project dependencies:
+1. Run the following command to install all packages:
 
 ```bash
 npm install
 ```
 
+2. Wait for the installation to complete
+
 This reads `package.json` and installs all required packages into `node_modules/`.
 
 ### What Gets Installed
 
-The project uses these dependencies:
-
 **Production Dependencies:**
 
-| Package | Version | Purpose |
-|---------|---------|---------|
-| `express` | ^4.18.2 | Web framework for handling HTTP requests |
-| `ejs` | ^3.1.9 | Template engine for rendering HTML |
-| `axios` | ^1.6.2 | HTTP client for API requests |
-| `dotenv` | ^16.3.1 | Load environment variables from `.env` file |
+| Package | Purpose |
+|---------|---------|
+| `express` | Web framework for handling HTTP requests |
+| `ejs` | Template engine for rendering HTML |
+| `axios` | HTTP client for API requests |
+| `dotenv` | Load environment variables from `.env` file |
 
 **Development Dependencies:**
 
-| Package | Version | Purpose |
-|---------|---------|---------|
-| `nodemon` | ^3.0.2 | Auto-restart server on file changes |
-| `jest` | ^29.7.0 | Testing framework |
-| `supertest` | ^6.3.3 | HTTP testing library |
-| `eslint` | ^9.17.0 | Code linting (find errors/issues) |
-| `prettier` | ^3.7.4 | Code formatting |
+| Package | Purpose |
+|---------|---------|
+| `nodemon` | Auto-restart server on file changes |
+| `jest` | Testing framework |
+| `supertest` | HTTP testing library |
+| `eslint` | Code linting (find errors/issues) |
+| `prettier` | Code formatting |
+
+---
 
 ## Step 5: Set Up Environment Variables
 
-Copy the example environment file:
+1. Copy the example environment file:
 
+**On Mac/Linux:**
 ```bash
 cp .env.example .env
 ```
 
-On Windows (Command Prompt):
+**On Windows (Command Prompt):**
 ```cmd
 copy .env.example .env
 ```
 
-On Windows (PowerShell):
+**On Windows (PowerShell):**
 ```powershell
 Copy-Item .env.example .env
 ```
 
-The `.env` file contains:
+2. The `.env` file now contains:
 
 ```env
 PORT=3000
@@ -101,20 +116,23 @@ DEFAULT_PAGE_LIMIT=20
 MAX_SEARCH_LIMIT=1000
 ```
 
+---
+
 ## Step 6: Create Project Directories
 
-Create the directories you'll need for your code:
+1. Create the directories for your application code:
 
+**On Mac/Linux:**
 ```bash
 mkdir -p src/config src/routes src/controllers src/services src/repositories src/views/partials public/css
 ```
 
-On Windows (Command Prompt):
+**On Windows (Command Prompt):**
 ```cmd
 mkdir src\config src\routes src\controllers src\services src\repositories src\views\partials public\css
 ```
 
-Your project should now look like this:
+2. Verify your project structure looks like this:
 
 ```
 inter-workshop/
@@ -133,7 +151,7 @@ inter-workshop/
 │       └── partials/
 ├── tests/                # Test files (pre-configured)
 ├── .env                  # Your environment variables
-├── .env.example          # Environment template
+├── .env.example
 ├── .gitignore
 ├── .prettierrc
 ├── eslint.config.js
@@ -142,22 +160,31 @@ inter-workshop/
 └── package-lock.json
 ```
 
+---
+
 ## Step 7: Verify Setup
 
-Make sure everything is set up correctly:
+1. Check Node.js is installed:
 
 ```bash
-# Check Node.js
 node --version
+```
 
-# Check npm packages are installed
+2. Check npm packages are installed:
+
+```bash
 npm list --depth=0
+```
 
-# Check you're on your branch
+3. Check you're on your branch:
+
+```bash
 git branch
 ```
 
 You should see your branch name highlighted (e.g., `* dela-cruz/pokedex-pull-request`).
+
+---
 
 ## Available npm Scripts
 
@@ -175,19 +202,28 @@ The `package.json` is already configured with these scripts:
 
 > **Note:** You don't need to modify `package.json`. Everything is already set up for you.
 
-## Commit Your Progress
+---
 
-Now that your project is set up, commit your changes:
+## Step 8: Commit Your Progress
+
+1. Stage all your changes:
 
 ```bash
 git add .
+```
+
+2. Commit with the conventional format:
+
+```bash
 git commit -m "chore: set up project structure and environment
 
 Full Name: Juan Dela Cruz
 Umindanao: juan.delacruz@email.com"
 ```
 
-> **Remember:** Replace the name and email with your own information.
+3. Replace the name and email with your own information
+
+---
 
 ## What's Next?
 

@@ -2,6 +2,8 @@
 
 Routes connect URLs to controllers. They're the "address book" of your application.
 
+---
+
 ## What is a Route?
 
 When someone visits `http://localhost:3000/pokemon/pikachu`:
@@ -9,75 +11,30 @@ When someone visits `http://localhost:3000/pokemon/pikachu`:
 2. Finds the matching pattern (`/pokemon/:nameOrId`)
 3. Calls the associated controller function
 
-## Express Router Basics
+---
 
-```javascript
-import { Router } from 'express';
+## Step 1: Create the Pokemon Routes File
 
-const router = Router();
+1. Create a new file `src/routes/pokemonRoutes.js`
 
-// Define routes
-router.get('/path', controllerFunction);
-
-export default router;
-```
-
-## Route Patterns
-
-### Static Routes
-
-```javascript
-router.get('/about', aboutController);
-// Matches: /about
-// Does NOT match: /about/team
-```
-
-### Dynamic Routes (Parameters)
-
-```javascript
-router.get('/pokemon/:nameOrId', pokemonController);
-// Matches: /pokemon/pikachu, /pokemon/25, /pokemon/mr-mime
-// Access via: req.params.nameOrId
-```
-
-### Multiple Parameters
-
-```javascript
-router.get('/trainer/:trainerId/pokemon/:pokemonId', handler);
-// Matches: /trainer/ash/pokemon/25
-// Access: req.params.trainerId, req.params.pokemonId
-```
-
-## Creating the Routes
-
-### Main Router
-
-Create `src/routes/index.js`:
-
-```javascript
-import { Router } from 'express';
-import pokemonRoutes from './pokemonRoutes.js';
-
-const router = Router();
-
-// Mount all Pokemon routes at root
-router.use('/', pokemonRoutes);
-
-export default router;
-```
-
-This file is the main entry point for all routes. It can include routes from multiple files.
-
-### Pokemon Routes
-
-Create `src/routes/pokemonRoutes.js`:
+2. Add the imports at the top:
 
 ```javascript
 import { Router } from 'express';
 import * as pokemonController from '../controllers/pokemonController.js';
 
 const router = Router();
+```
 
+3. Save the file
+
+---
+
+## Step 2: Add View Routes
+
+1. Add these routes for HTML pages:
+
+```javascript
 // ============================================
 // VIEW ROUTES (Return HTML)
 // ============================================
@@ -93,7 +50,17 @@ router.get('/type/:type', pokemonController.getPokemonByType);
 
 // Pokemon detail page
 router.get('/pokemon/:nameOrId', pokemonController.getPokemonDetails);
+```
 
+2. Save the file
+
+---
+
+## Step 3: Add API Routes
+
+1. Add these routes for JSON responses:
+
+```javascript
 // ============================================
 // API ROUTES (Return JSON)
 // ============================================
@@ -112,197 +79,151 @@ router.get('/api/types', pokemonController.apiGetTypes);
 
 // Get Pokemon by type
 router.get('/api/types/:type', pokemonController.apiGetPokemonByType);
+```
+
+2. Save the file
+
+---
+
+## Step 4: Export the Router
+
+1. Add this at the end of the file:
+
+```javascript
+export default router;
+```
+
+2. Save the file
+
+---
+
+## Step 5: Verify Your pokemonRoutes.js
+
+Your complete file should look like this:
+
+```javascript
+import { Router } from 'express';
+import * as pokemonController from '../controllers/pokemonController.js';
+
+const router = Router();
+
+// View routes (EJS)
+router.get('/', pokemonController.getHomePage);
+router.get('/search', pokemonController.searchPokemon);
+router.get('/type/:type', pokemonController.getPokemonByType);
+router.get('/pokemon/:nameOrId', pokemonController.getPokemonDetails);
+
+// API routes (JSON)
+router.get('/api/pokemon', pokemonController.apiGetAllPokemon);
+router.get('/api/pokemon/search', pokemonController.apiSearchPokemon);
+router.get('/api/pokemon/:nameOrId', pokemonController.apiGetPokemonDetails);
+router.get('/api/types', pokemonController.apiGetTypes);
+router.get('/api/types/:type', pokemonController.apiGetPokemonByType);
 
 export default router;
 ```
 
-## Route Order Matters!
+---
 
-Routes are matched in order. More specific routes should come before generic ones:
+## Step 6: Create the Main Router
+
+1. Create a new file `src/routes/index.js`
+
+2. Add this code:
+
+```javascript
+import { Router } from 'express';
+import pokemonRoutes from './pokemonRoutes.js';
+
+const router = Router();
+
+// Mount all Pokemon routes at root
+router.use('/', pokemonRoutes);
+
+export default router;
+```
+
+3. Save the file
+
+---
+
+## Understanding Route Patterns
+
+### Static Routes
+
+```javascript
+router.get('/about', aboutController);
+// Matches: /about
+// Does NOT match: /about/team
+```
+
+### Dynamic Routes (Parameters)
+
+```javascript
+router.get('/pokemon/:nameOrId', pokemonController);
+// Matches: /pokemon/pikachu, /pokemon/25
+// Access via: req.params.nameOrId
+```
+
+### Route Order Matters!
+
+More specific routes should come before generic ones:
 
 ```javascript
 // CORRECT ORDER ✓
-router.get('/api/pokemon/search', searchController);   // Specific
-router.get('/api/pokemon/:nameOrId', detailController); // Generic
+router.get('/api/pokemon/search', searchController);   // Specific first
+router.get('/api/pokemon/:nameOrId', detailController); // Generic second
 
 // WRONG ORDER ✗
-router.get('/api/pokemon/:nameOrId', detailController); // This would match first!
+router.get('/api/pokemon/:nameOrId', detailController); // Catches "search"!
 router.get('/api/pokemon/search', searchController);     // Never reached!
 ```
 
-Why? Because `/api/pokemon/search` would match `:nameOrId` as "search".
+---
 
-## Complete Route Reference
+## Route Reference
 
 ### View Routes (HTML)
 
 | Method | Route | Controller | Description |
 |--------|-------|------------|-------------|
-| GET | `/` | `getHomePage` | Home page with Pokemon list |
-| GET | `/search` | `searchPokemon` | Search results page |
-| GET | `/type/:type` | `getPokemonByType` | Pokemon filtered by type |
-| GET | `/pokemon/:nameOrId` | `getPokemonDetails` | Pokemon detail page |
+| GET | `/` | `getHomePage` | Home page |
+| GET | `/search` | `searchPokemon` | Search results |
+| GET | `/type/:type` | `getPokemonByType` | Filter by type |
+| GET | `/pokemon/:nameOrId` | `getPokemonDetails` | Detail page |
 
 ### API Routes (JSON)
 
 | Method | Route | Controller | Description |
 |--------|-------|------------|-------------|
-| GET | `/api/pokemon` | `apiGetAllPokemon` | List Pokemon (paginated) |
-| GET | `/api/pokemon/search` | `apiSearchPokemon` | Search Pokemon |
-| GET | `/api/pokemon/:nameOrId` | `apiGetPokemonDetails` | Get single Pokemon |
-| GET | `/api/types` | `apiGetTypes` | List all types |
-| GET | `/api/types/:type` | `apiGetPokemonByType` | Pokemon by type |
+| GET | `/api/pokemon` | `apiGetAllPokemon` | List Pokemon |
+| GET | `/api/pokemon/search` | `apiSearchPokemon` | Search |
+| GET | `/api/pokemon/:nameOrId` | `apiGetPokemonDetails` | Get one |
+| GET | `/api/types` | `apiGetTypes` | List types |
+| GET | `/api/types/:type` | `apiGetPokemonByType` | By type |
 
-## Query Strings
+---
 
-Query strings (`?key=value`) are NOT part of route matching:
+## Step 7: Commit Your Progress
 
-```javascript
-router.get('/search', handler);
-// Matches: /search, /search?q=pikachu, /search?q=pikachu&limit=10
-// Access query: req.query.q, req.query.limit
-```
-
-## HTTP Methods
-
-While we only use GET in this app, here are all methods:
-
-```javascript
-router.get('/items', getItems);       // Read
-router.post('/items', createItem);    // Create
-router.put('/items/:id', updateItem); // Update (replace)
-router.patch('/items/:id', patchItem); // Update (partial)
-router.delete('/items/:id', deleteItem); // Delete
-```
-
-## Route Organization Tips
-
-### 1. Group Related Routes
-
-Keep routes for the same resource together:
-
-```javascript
-// All Pokemon routes
-router.get('/pokemon', listPokemon);
-router.get('/pokemon/:id', getPokemon);
-router.post('/pokemon', createPokemon);
-```
-
-### 2. Use Separate Files for Large Apps
-
-```
-src/routes/
-├── index.js          # Main router (imports others)
-├── pokemonRoutes.js  # /pokemon routes
-├── trainerRoutes.js  # /trainer routes
-└── authRoutes.js     # /auth routes
-```
-
-### 3. Prefix API Routes
-
-```javascript
-// Clear distinction between views and API
-router.get('/pokemon/:id', renderPokemonPage);     // HTML
-router.get('/api/pokemon/:id', getPokemonJSON);    // JSON
-```
-
-## How Routes Connect to the App
-
-In `src/app.js`, routes are connected using `app.use()`:
-
-```javascript
-import routes from './routes/index.js';
-
-const app = express();
-
-// ... middleware setup ...
-
-// Connect all routes
-app.use('/', routes);
-```
-
-You can also add a prefix:
-
-```javascript
-app.use('/v1', routes);  // All routes now start with /v1
-// /pokemon becomes /v1/pokemon
-```
-
-## Testing Routes
-
-Use curl or your browser:
-
-```bash
-# Home page
-curl http://localhost:3000/
-
-# Pokemon detail
-curl http://localhost:3000/pokemon/pikachu
-
-# API endpoint
-curl http://localhost:3000/api/pokemon?limit=5
-
-# Search with query
-curl "http://localhost:3000/api/pokemon/search?q=char"
-```
-
-## Common Mistakes
-
-### 1. Forgetting to Export
-
-```javascript
-// WRONG - router not exported
-const router = Router();
-router.get('/', handler);
-
-// CORRECT
-export default router;
-```
-
-### 2. Missing Import
-
-```javascript
-// WRONG - Router not imported
-const router = Router();
-
-// CORRECT
-import { Router } from 'express';
-const router = Router();
-```
-
-### 3. Wrong Order
-
-```javascript
-// WRONG - dynamic before static
-router.get('/:id', handler);
-router.get('/new', handler);  // Never reached!
-
-// CORRECT
-router.get('/new', handler);   // Specific first
-router.get('/:id', handler);   // Generic last
-```
-
-## Summary
-
-- Routes map URLs to controller functions
-- Use `:param` for dynamic URL segments
-- Order matters - specific routes before generic
-- Query strings are accessed via `req.query`
-- Export routers and import them in the main app
-
-## Commit Your Progress
-
-Commit your routes:
+1. Stage your changes:
 
 ```bash
 git add .
+```
+
+2. Commit with the conventional format:
+
+```bash
 git commit -m "feat: add application routes
 
 Full Name: Juan Dela Cruz
 Umindanao: juan.delacruz@email.com"
 ```
 
-> **Remember:** Replace the name and email with your own information.
+3. Replace the name and email with your own information
+
+---
 
 ## What's Next?
 
